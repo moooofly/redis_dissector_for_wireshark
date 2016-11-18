@@ -10,8 +10,6 @@ do -- scope
     -- we could make more of these, e.g. to distinguish keys from values
     f.value   = ProtoField.string('redis.value',   'Value')
 
-
-
 ----
 
     mtypes = {
@@ -46,9 +44,6 @@ do -- scope
 
         if prefix == '*' then    -- Arrays, contains multiple Bulk Strings
 
-            io.write("-----\n")
-            -- io.write("len: "..length.."   matches: "..line.."\n")
-
             local num_of_bulk = tonumber(text)
 
             -- this is a bit gross: we parse (part of) the buffer again to
@@ -56,7 +51,8 @@ do -- scope
             -- if we don't do this, Wireshark will highlight only our prologue
             local bytes = 0
             local remainder = buffer():string():sub(offset + length + CRLF)
-            local submatches = remainder:gmatch('[^\r\n]+')
+            --local submatches = remainder:gmatch('[^\r\n]+')
+            local submatches = remainder:gmatch('([^\r]+)\r\n')
 
             local d = {}
             local counter = num_of_bulk
@@ -85,6 +81,8 @@ do -- scope
             for ii = 1, num_of_bulk do
                 offset = recurse(child, buffer, pktinfo, offset, matches)
             end
+
+            io.write("-----\n")
             
             pktinfo.cols.info:set("Redis Request")
             pktinfo.cols.info:append(" ".."\t--> ".."("..command..")")
@@ -138,7 +136,8 @@ do -- scope
         pktinfo.cols.protocol:set('Redis')
 
         -- parse top-level messages until the tvbuf is exhausted
-        local matches = tvbuf():string():gmatch('[^\r\n]+')
+        --local matches = tvbuf():string():gmatch('[^\r\n]+')
+        local matches = tvbuf():string():gmatch('([^\r]+)\r\n')
         local offset = 0
         while offset < tvbuf():len() do
             offset = recurse(root, tvbuf, pktinfo, offset, matches)
@@ -151,7 +150,7 @@ do -- scope
     -- register this dissector for the standard Redis ports
     local dissectors = DissectorTable.get('tcp.port')
 
-    for _, port in ipairs{ 6379, 7106, 7108} do
+    for _, port in ipairs{ 6379, 7106, 7108 } do
         dissectors:add(port, proto)
     end
 end
