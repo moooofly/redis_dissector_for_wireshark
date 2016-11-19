@@ -51,8 +51,8 @@ do -- scope
             -- if we don't do this, Wireshark will highlight only our prologue
             local bytes = 0
             local remainder = buffer():string():sub(offset + length + CRLF)
-            --local submatches = remainder:gmatch('[^\r\n]+')
-            local submatches = remainder:gmatch('([^\r]+)\r\n')
+            local submatches = remainder:gmatch('[^\r\n]+')
+            --local submatches = remainder:gmatch('([^\r]+)\r\n')
 
             local d = {}
             local counter = num_of_bulk
@@ -136,8 +136,8 @@ do -- scope
         pktinfo.cols.protocol:set('Redis')
 
         -- parse top-level messages until the tvbuf is exhausted
-        --local matches = tvbuf():string():gmatch('[^\r\n]+')
-        local matches = tvbuf():string():gmatch('([^\r]+)\r\n')
+        local matches = tvbuf():string():gmatch('[^\r\n]+')
+        --local matches = tvbuf():string():gmatch('([^\r]+)\r\n')
         local offset = 0
         while offset < tvbuf():len() do
             offset = recurse(root, tvbuf, pktinfo, offset, matches)
